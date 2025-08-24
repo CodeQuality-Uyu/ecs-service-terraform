@@ -1,0 +1,24 @@
+terraform {
+  required_version = ">= 1.5.0"
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = ">= 5.0"
+    }
+  }
+
+  backend "remote" {
+    organization = "ColorLabs"
+
+    workspaces {
+      prefix = "${var.env}-"
+      name = "ecs-service-terraform"
+    }
+  }
+}
+
+provider "aws" {
+  region = var.aws_region
+  access_key = var.aws_access_key
+  secret_key = var.aws_secret_key
+}
