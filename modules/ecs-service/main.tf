@@ -95,20 +95,6 @@ resource "aws_lb_target_group" "tg" {
   lifecycle { create_before_destroy = true }
 }
 
-# Listener rule (optional, on shared listener)
-resource "aws_lb_listener_rule" "rule" {
-  count        = var.expose_via_alb && var.alb_listener_arn != null ? 1 : 0
-  listener_arn = var.alb_listener_arn
-  priority     = var.rule_priority
-  action {
-    type = "forward"
-    target_group_arn = aws_lb_target_group.tg[0].arn
-    }
-  condition {
-    path_pattern { values = [var.path_pattern] } 
-    }
-}
-
 # ECS Service – track the latest ACTIVE revision family so TF won’t roll back CI deploys
 resource "aws_ecs_service" "svc" {
   name                    = "${var.env}-${var.service_name}"
@@ -133,5 +119,40 @@ resource "aws_ecs_service" "svc" {
       container_name   = var.service_name
       container_port   = var.container_port
     }
+  }
+}
+
+# allow ALB -> service on container_port
+resource "aws_security_group_rule" "svc_ingress_from_alb" {
+  type                     = "ingress"
+  from_port                = var.container_port
+  to_port                  = var.container_port
+  protocol                 = "tcp"
+  security_group_id        = var.service_security_group_id
+  source_security_group_id = var.alb_security_group_id
+}
+
+# open external listener port on the ALB SG
+resource "aws_security_group_rule" "alb_ingress_service_port" {
+  type              = "ingress"
+  security_group_id = var.alb_security_group_id
+  from_port         = var.listener_port
+  to_port           = var.listener_port
+  protocol          = "tcp"
+  cidr_blocks       = ["0.0.0.0/0"] # tighten if needed
+}
+
+# per-service listener (port-based)
+resource "aws_lb_listener" "svc_listener" {
+  load_balancer_arn = var.alb_arn
+  port              = var.listener_port
+  protocol          = var.listener_protocol
+
+  ssl_policy      = var.listener_protocol == "HTTPS" ? "ELBSecurityPolicy-TLS13-1-2-2021-06" : null
+  certificate_arn = var.listener_protocol == "HTTPS" ? var.certificate_arn : null
+
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.tg.arn
   }
 }

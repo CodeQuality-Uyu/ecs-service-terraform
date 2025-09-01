@@ -4,6 +4,13 @@ variable "aws_secret_key"    { type = string }
 variable "env"               { type = string }  # dev | prod | ...
 variable "service_name"      { type = string }  # users | orders | email
 
+# the external listener port for this service (e.g., 5000 or 5001)
+variable "listener_port" {
+  type        = number
+  description = "External ALB port for this service."
+}
+
+
 # ---- Cluster remote-state hookup (points to clusters workspace) ----
 variable "clusters_org"      { type = string }  # TFC org name
 variable "clusters_ws_name"  { type = string }  # e.g., clusters-dev

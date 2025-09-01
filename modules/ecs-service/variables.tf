@@ -35,16 +35,22 @@ variable "alb_listener_arn"  {
   type = string
   default = null
 }
-variable "path_pattern"      {
-  type = string
-  default = "/"
-}
-variable "rule_priority"     {
-  type = number
-  default = 100
-}
 
 variable "log_retention_days" {
   type = number
   default = 30
+}
+
+# NEW
+variable "listener_port" { type = number }
+variable "listener_protocol" { 
+  type = string
+  default = "HTTPS"
+}
+variable "alb_arn" { type = string }
+variable "alb_security_group_id" { type = string }
+variable "service_security_group_id" { type = string }
+variable "certificate_arn" {
+  type = string
+  default = null
 }

@@ -50,6 +50,11 @@ module "svc" {
   # Optional ALB exposure (target group + listener rule on shared ALB)
   expose_via_alb   = var.expose_via_alb
   alb_listener_arn = local.listener_arn
-  path_pattern     = var.path_pattern
-  rule_priority    = var.priority
+
+  listener_port          = var.listener_port
+  alb_arn                = data.terraform_remote_state.cluster.outputs.alb_arn
+  alb_security_group_id  = data.terraform_remote_state.cluster.outputs.alb_security_group_id
+  service_security_group_id = data.terraform_remote_state.cluster.outputs.service_security_group_id
+  certificate_arn        = data.terraform_remote_state.cluster.outputs.certificate_arn
+
 }
