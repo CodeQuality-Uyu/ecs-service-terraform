@@ -58,3 +58,8 @@ variable "initial_image_tag" {
   type = string
   default = null
 }        # e.g., dev-users-1.0.0
+variable "environment" {
+  description = "List of environment variables for the container"
+  type = list(object({ name = string, value = string }))
+  default = []
+}
