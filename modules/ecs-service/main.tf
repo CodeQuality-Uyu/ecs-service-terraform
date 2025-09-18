@@ -61,6 +61,7 @@ locals {
         awslogs-stream-prefix = var.service_name
       }
     }
+    environment = var._environment_variables
   }])
 
   container_json = var.bootstrap ? local.container_bootstrap : data.aws_ecs_task_definition.latest[0].container_definitions
