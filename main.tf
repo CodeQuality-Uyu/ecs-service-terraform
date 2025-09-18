@@ -56,5 +56,5 @@ module "svc" {
   alb_security_group_id  = data.terraform_remote_state.cluster.outputs.alb_security_group_id
   service_security_group_id = data.terraform_remote_state.cluster.outputs.service_security_group_id
   certificate_arn        = data.terraform_remote_state.cluster.outputs.certificate_arn
-
+  environment_variables  = var.environment_variables
 }
