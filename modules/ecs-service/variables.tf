@@ -54,3 +54,8 @@ variable "certificate_arn" {
   type = string
   default = null
 }
+variable "environment" {
+  description = "List of environment variables for the container"
+  type = list(object({ name = string, value = string }))
+  default = []
+}
