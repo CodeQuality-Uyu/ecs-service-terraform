@@ -11,8 +11,8 @@ terraform {
     organization = "ColorLabs"
 
     workspaces {
-      prefix = "${var.env}-"
-      name = "ecs-service-terraform"
+      prefix = "${var.env}-${var.service_name}"
+      name = "ecs-service"
     }
   }
 }
