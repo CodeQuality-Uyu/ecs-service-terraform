@@ -215,6 +215,12 @@ variable "capacity_provider_strategy" {
 }
 
 # Deployment tuning
-variable "deployment_min_healthy_percent" { type = number, default = 50 }
-variable "deployment_max_percent"        { type = number, default = 200 }
+variable "deployment_min_healthy_percent" {
+  type = number
+  default = 50
+}
+variable "deployment_max_percent" {
+  type = number
+  default = 200
+}
 
