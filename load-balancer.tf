@@ -1,4 +1,4 @@
-# Target Group (only when exposing via ALB)
+# Target Group (ip targets for Fargate)
 resource "aws_lb_target_group" "this" {
   count       = var.expose_via_alb ? 1 : 0
   name        = substr(replace("${var.name}-tg", ".", "-"), 0, 32)
@@ -21,44 +21,25 @@ resource "aws_lb_target_group" "this" {
   tags                 = var.tags
 }
 
-# Listener on specified port (per-service port) – HTTP or HTTPS
-resource "aws_lb_listener" "this" {
-  count             = var.expose_via_alb ? 1 : 0
-  load_balancer_arn = var.alb_arn
-  port              = var.listener_port
-  protocol          = var.listener_protocol
+# Host-based rule on shared HTTPS :443 listener
+resource "aws_lb_listener_rule" "host_443" {
+  count        = var.expose_via_alb ? 1 : 0
+  listener_arn = var.https_listener_arn
+  priority     = var.listener_rule_priority
 
-  dynamic "default_action" {
-    for_each = [1]
-    content {
-      type             = "forward"
-      target_group_arn = aws_lb_target_group.this[0].arn
-    }
+  action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.this[0].arn
   }
 
-  ssl_policy      = var.listener_protocol == "HTTPS" ? "ELBSecurityPolicy-2016-08" : null
-  certificate_arn = var.listener_protocol == "HTTPS" ? var.certificate_arn : null
+  condition {
+    host_header { values = var.hostnames }
+  }
 
   lifecycle {
     precondition {
-      condition     = var.listener_protocol == "HTTP" || (var.listener_protocol == "HTTPS" && var.certificate_arn != null)
-      error_message = "certificate_arn is required when listener_protocol is HTTPS"
-    }
-  }
-}
-
-# Optional: HTTP redirect on same port to HTTPS
-resource "aws_lb_listener" "redirect_http" {
-  count             = var.expose_via_alb && var.listener_protocol == "HTTPS" && var.redirect_http_to_https ? 1 : 0
-  load_balancer_arn = var.alb_arn
-  port              = var.listener_port
-  protocol          = "HTTP"
-  default_action {
-    type = "redirect"
-    redirect {
-      port        = tostring(var.listener_port)
-      protocol    = "HTTPS"
-      status_code = "HTTP_301"
+      condition     = var.https_listener_arn != null && length(var.hostnames) > 0 && var.listener_rule_priority != null
+      error_message = "When expose_via_alb=true you must set https_listener_arn, hostnames and listener_rule_priority."
     }
   }
 }
