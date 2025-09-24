@@ -12,7 +12,7 @@ terraform {
 
     workspaces {
       prefix = "${var.env}-"
-      name = "ecs-service-terraform"
+      name = "ecs-service"
     }
   }
 }

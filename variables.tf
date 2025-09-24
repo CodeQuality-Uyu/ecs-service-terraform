@@ -1,60 +1,103 @@
-variable "aws_region"        { type = string }
-variable "aws_access_key"    { type = string }
-variable "aws_secret_key"    { type = string }
-variable "env"               { type = string }  # dev | prod | ...
-variable "service_name"      { type = string }  # users | orders | email
+variable "name"                  { description = "Service name"; type = string }
+variable "tags"                  { description = "Common tags";  type = map(string); default = {} }
 
-# the external listener port for this service (e.g., 5000 or 5001)
-variable "listener_port" {
+variable "cluster_arn"           { description = "Existing ECS cluster ARN"; type = string }
+variable "subnet_ids"            { description = "Subnets for awsvpc"; type = list(string) }
+variable "vpc_id"                { description = "VPC ID (for TG + SG)"; type = string }
+variable "assign_public_ip"      { description = "Assign public IP to tasks"; type = bool; default = true }
+
+# Sizing
+variable "cpu"                   { description = "Task CPU units"; type = number }
+variable "memory"                { description = "Task memory (MiB)"; type = number }
+variable "container_port"        { description = "Container port"; type = number }
+variable "desired_count"         { description = "Desired tasks"; type = number; default = 1 }
+
+# Image
+variable "image"                 { description = "Full image URI (optional)"; type = string; default = null }
+variable "repository_url"        { description = "ECR repo URL"; type = string; default = null }
+variable "image_tag"             { description = "Image tag"; type = string; default = "latest" }
+
+# Env & Secrets
+variable "env"                   { description = "Environment variables"; type = map(string); default = {} }
+variable "secrets" {
+  description = "Container secrets (name/valueFrom ARN)"
+  type = list(object({ name = string, valueFrom = string }))
+  default = []
+}
+
+# IAM (optional create)
+variable "execution_role_arn"    { type = string, default = null }
+variable "create_execution_role" { type = bool,   default = true  }
+variable "task_role_arn"         { type = string, default = null }
+variable "task_role_inline_policy_json" { type = string, default = null }
+
+# Logs
+variable "log_retention_days"    { type = number, default = 14 }
+
+# Exposure / SG
+variable "expose_via_alb"        { type = bool,   default = true }
+variable "alb_security_group_id" { type = string, default = null }
+variable "allowed_source_sg_ids" { type = list(string), default = [] }
+
+# Health / platform / deploy
+variable "health_path"                 { type = string, default = "/health" }
+variable "health_check_grace_period"   { type = number, default = 60 }
+variable "enable_execute_command"      { type = bool,   default = true }
+variable "platform_version"            { type = string, default = "1.4.0" }
+variable "deployment_min_healthy_percent" { type = number, default = 50 }
+variable "deployment_max_percent"         { type = number, default = 200 }
+
+# Capacity providers (optional per-service override)
+variable "capacity_provider_strategy" {
+  description = "If empty, uses launch_type=FARGATE"
+  type = list(object({
+    capacity_provider = string
+    base              = optional(number, 0)
+    weight            = optional(number, 1)
+  }))
+  default = []
+}
+
+# --- Host-based routing on :443 ---
+variable "https_listener_arn" {
+  description = "ARN of shared HTTPS :443 listener (from ingress). Required if expose_via_alb = true."
+  type        = string
+  default     = null
+}
+
+variable "hostnames" {
+  description = "FQDNs that should route to this service (e.g., [\"users.dev.ecolors.app\"])."
+  type        = list(string)
+  default     = []
+}
+
+variable "listener_rule_priority" {
+  description = "Unique priority for the rule on :443. Required if expose_via_alb = true."
   type        = number
-  description = "External ALB port for this service."
+  default     = null
 }
 
-
-# ---- Cluster remote-state hookup (points to clusters workspace) ----
-variable "clusters_org"      { type = string }  # TFC org name
-variable "clusters_ws_name"  { type = string }  # e.g., clusters-dev
-
-# ---- Service sizing (Terraform controls cost here) ----
-variable "cpu"               { type = number }  # e.g., 256/512/1024
-variable "memory"            { type = number }  # MiB e.g., 512/1024/2048
-variable "desired_count"     {
-  type = number
-  default = 1
+# Optional: per-service DNS creation
+variable "create_dns_records" {
+  description = "Create Route53 A/ALIAS for hostnames → ALB"
+  type        = bool
+  default     = true
 }
 
-# ---- Networking from cluster outputs (we’ll fetch via remote state) ----
-# Nothing here; they come from terraform_remote_state (subnets, SG, ALB listener)
+variable "route53_zone_id" {
+  description = "Route53 hosted zone ID containing the hostnames"
+  type        = string
+  default     = null
+}
 
-# ---- ALB routing (optional if headless/internal) ----
-variable "expose_via_alb"    { 
-  type = bool
-  default = true 
+variable "alb_dns_name" {
+  description = "ALB DNS name (alias target)"
+  type        = string
+  default     = null
 }
-variable "container_port"    {
-  type = number
-  default = 8080
-}
-variable "path_pattern"      {
-  type = string
-  default = "/"
-}        # e.g., /users*, /orders*
-variable "priority"          {
-  type = number
-  default = 100
-}         # listener rule priority (unique)
 
-# ---- Bootstrap (first run only) ----
-# On first ever apply for a service, you must provide an initial image tag that exists.
-# After first apply, set bootstrap=false and you won’t touch images with Terraform anymore.
-variable "bootstrap"         {
-  type = bool
-  default = false
+variable "alb_zone_id" {
+  description = "ALB zone ID (alias hosted zone ID)"
+  type        = string
+  default     = null
 }
-variable "ecr_repo_name"     {
-  type = string
-}                        # will be created if absent
-variable "initial_image_tag" {
-  type = string
-  default = null
-}        # e.g., dev-users-1.0.0

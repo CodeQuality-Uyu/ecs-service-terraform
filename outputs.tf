@@ -1,4 +1,15 @@
-output "service_name"   { value = module.svc.service_name }
-output "service_arn"    { value = module.svc.service_arn }
-output "family"         { value = module.svc.family }
-output "ecr_repo_url"   { value = module.ecr.repository_url }
+output "service_name"        { value = aws_ecs_service.this.name }
+output "service_arn"         { value = aws_ecs_service.this.arn }
+output "task_definition_arn" { value = aws_ecs_task_definition.this.arn }
+output "service_sg_id"       { value = aws_security_group.service.id }
+output "log_group_name"      { value = aws_cloudwatch_log_group.this.name }
+
+output "target_group_arn" {
+  value       = try(aws_lb_target_group.this[0].arn, null)
+  description = "Target group ARN (if exposed)"
+}
+
+output "listener_rule_arn" {
+  value       = try(aws_lb_listener_rule.host_443[0].arn, null)
+  description = "Listener rule ARN on :443 (host-based)"
+}
