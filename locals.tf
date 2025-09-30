@@ -15,12 +15,19 @@ locals {
   # prefer "ingress" if present, else "alb"
   ingress_outputs = try(data.terraform_remote_state.alb[0].outputs, null)
 
-  # Listener ARN: accept either a dedicated output OR a map output
-  effective_https_listener_arn = coalesce(
+  # Collect possible keys for the :443 listener ARN
+  https_listener_candidates = compact([
     var.https_listener_arn,
-    try(local.ingress_outputs.https_443_listener_arn, null),
-    try(local.ingress_outputs.listener_arns.https_443, null)
-  )
+    try(local.ingress_outputs.https_443_listener_arn,  null),
+    try(local.ingress_outputs.https_listener_arn,      null),
+    try(local.ingress_outputs.listener_arn_https_443,  null),
+    try(local.ingress_outputs.listener_arns.https_443, null),
+    try(local.ingress_outputs.listener_arns.https,     null),
+    try(local.ingress_outputs.listeners.https_443.arn, null)
+  ])
+  
+  # Pick the first non-empty candidate; null if none
+  effective_https_listener_arn = length(local.https_listener_candidates) > 0 ? local.https_listener_candidates[0] : null
 
   effective_alb_dns_name = coalesce(
     var.alb_dns_name,
