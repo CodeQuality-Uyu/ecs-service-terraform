@@ -171,7 +171,7 @@ variable "remote_state_network_ws" {
   type = string
   default = null
 }
-variable "remote_state_ingress_ws" {
+variable "remote_state_alb_ws" {
   type = string
   default = null
 }
