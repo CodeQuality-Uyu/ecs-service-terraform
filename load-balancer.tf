@@ -6,7 +6,7 @@ resource "aws_lb_listener_rule" "host_443" {
 
   action {
     type             = "forward"
-    target_group_arn = aws_lb_target_group.this[0].arn
+    target_group_arn = aws_lb_target_group.this.arn
   }
 
   condition {

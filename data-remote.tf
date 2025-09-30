@@ -14,7 +14,7 @@ data "terraform_remote_state" "alb" {
   backend = "remote"
   config = {
     organization = var.remote_state_org
-    workspaces   = { name = var.remote_state_ingress_ws }
+    workspaces   = { name = var.remote_state_alb_ws }
   }
 }
 
