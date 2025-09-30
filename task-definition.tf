@@ -40,6 +40,13 @@ resource "aws_ecs_task_definition" "this" {
     }
   ])
 
+  lifecycle {
+    precondition {
+      condition     = local.image_uri != null && local.image_uri != ""
+      error_message = "Set either `image` (full URI) OR `repository_url` + `image_tag`."
+    }
+  }
+
   runtime_platform {
     operating_system_family = "LINUX"
     cpu_architecture        = "X86_64"
