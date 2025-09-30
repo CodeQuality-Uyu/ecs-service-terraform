@@ -38,4 +38,20 @@ locals {
     var.alb_security_group_id,
     try(data.terraform_remote_state.ingress[0].outputs.alb_sg_id, null)
   )
+
+ # Build the final container image URI:
+  # - If `var.image` is provided, use it as-is (e.g., ".../repo:tag" or with a digest).
+  # - Otherwise, compose "<repository_url>:<image_tag>".
+  image_uri = var.image != null ? var.image : "${var.repository_url}:${var.image_tag}"
+
+  container_environment = [
+    for k, v in var.env : { name = k, value = v }
+  ]
+
+  container_secrets = [
+    for s in var.secrets : { name = s.name, valueFrom = s.valueFrom }
+  ]
+
+  # Use capacity providers if any strategy entries were provided
+  use_capacity_providers = length(var.capacity_provider_strategy) > 0
 }
