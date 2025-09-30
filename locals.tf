@@ -5,9 +5,7 @@ locals {
     try(data.terraform_remote_state.network[0].outputs.vpc_id, null)
   )
 
-  effective_subnet_ids = var.subnet_ids != null
-    ? var.subnet_ids
-    : try(data.terraform_remote_state.network[0].outputs.private_subnet_ids, null)
+  effective_subnet_ids = var.subnet_ids != null ? var.subnet_ids : try(data.terraform_remote_state.network[0].outputs.private_subnet_ids, null)
 
   effective_cluster_arn = coalesce(
     var.cluster_arn,
