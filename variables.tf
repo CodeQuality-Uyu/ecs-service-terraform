@@ -53,7 +53,10 @@ variable "env"            {
   default = {}
 }
 variable "secrets" {
-  type    = list(object({ name = string valueFrom = string }))
+  type    = list(object({
+    name = string
+    valueFrom = string
+  }))
   default = []
 }
 
@@ -121,8 +124,8 @@ variable "deployment_max_percent"         {
 variable "capacity_provider_strategy" {
   type = list(object({
     capacity_provider = string
-    base              = optional(number 0)
-    weight            = optional(number 1)
+    base              = optional(number, 0)
+    weight            = optional(number, 1)
   }))
   default = []
 }
