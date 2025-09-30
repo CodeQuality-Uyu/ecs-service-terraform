@@ -13,8 +13,7 @@ locals {
   )
 
   # prefer "ingress" if present, else "alb"
-  ingress_outputs = try(data.terraform_remote_state.ingress[0].outputs,
-                    try(data.terraform_remote_state.alb[0].outputs, null))
+  ingress_outputs = try(data.terraform_remote_state.alb[0].outputs, null)
 
   # Listener ARN: accept either a dedicated output OR a map output
   effective_https_listener_arn = coalesce(
