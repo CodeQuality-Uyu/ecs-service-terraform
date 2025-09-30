@@ -1,6 +1,6 @@
 resource "aws_ecs_service" "this" {
   name                               = var.name
-  cluster                            = var.cluster_arn
+  cluster                            = local.effective_cluster_arn
   task_definition                    = aws_ecs_task_definition.this.arn
   desired_count                      = var.desired_count
   enable_execute_command             = var.enable_execute_command
@@ -21,7 +21,7 @@ resource "aws_ecs_service" "this" {
   }
 
   network_configuration {
-    subnets         = var.subnet_ids
+    subnets         = local.effective_subnet_ids
     security_groups = [aws_security_group.svc.id]
     assign_public_ip = var.assign_public_ip
   }
