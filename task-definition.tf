@@ -31,7 +31,7 @@ resource "aws_ecs_task_definition" "this" {
       }
 
       healthCheck = {
-        command     = ["CMD-SHELL", "curl -f http://localhost:${var.container_port}${var.health_path} || exit 1"]
+        command     = "/health"
         interval    = 30
         timeout     = 5
         retries     = 3
