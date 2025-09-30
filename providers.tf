@@ -6,15 +6,6 @@ terraform {
       version = ">= 5.0"
     }
   }
-
-  backend "remote" {
-    organization = "ColorLabs"
-
-    workspaces {
-      prefix = "${var.env}-"
-      name = "ecs-service"
-    }
-  }
 }
 
 provider "aws" {
