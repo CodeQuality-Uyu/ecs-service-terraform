@@ -1,31 +1,41 @@
-locals {
-  effective_image = var.image != null ? var.image : "${var.repository_url}:${var.image_tag}"
-}
-
 resource "aws_ecs_task_definition" "this" {
   family                   = var.name
-  requires_compatibilities = ["FARGATE"]
   network_mode             = "awsvpc"
-  cpu                      = var.cpu
-  memory                   = var.memory
-  execution_role_arn       = local.effective_execution_role_arn
-  task_role_arn            = local.effective_task_role_arn
+  requires_compatibilities = ["FARGATE"]
+  cpu                      = tostring(var.cpu)
+  memory                   = tostring(var.memory)
+
+  execution_role_arn = var.execution_role_arn != null
+    ? var.execution_role_arn
+    : (var.create_execution_role ? aws_iam_role.execution[0].arn : null)
+
+  task_role_arn = var.task_role_arn
 
   container_definitions = jsonencode([
     {
-      name      = var.name
-      image     = local.effective_image
-      essential = true
-      portMappings = [{ containerPort = var.container_port, protocol = "tcp" }]
-      environment = [for k, v in var.env : { name = k, value = v }]
-      secrets     = [for s in var.secrets : { name = s.name, valueFrom = s.valueFrom }]
+      name       = var.name
+      image      = local.image_uri
+      essential  = true
+      portMappings = [{ containerPort = var.container_port, hostPort = var.container_port, protocol = "tcp" }]
+
+      environment = local.container_environment
+      secrets     = local.container_secrets
+
       logConfiguration = {
         logDriver = "awslogs"
         options = {
           awslogs-group         = aws_cloudwatch_log_group.this.name
-          awslogs-region        = data.aws_region.current.name
+          awslogs-region        = var.aws_region
           awslogs-stream-prefix = var.name
         }
+      }
+
+      healthCheck = {
+        command     = ["CMD-SHELL", "curl -f http://localhost:${var.container_port}${var.health_path} || exit 1"]
+        interval    = 30
+        timeout     = 5
+        retries     = 3
+        startPeriod = 10
       }
     }
   ])
