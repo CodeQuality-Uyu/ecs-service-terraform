@@ -9,8 +9,8 @@ data "terraform_remote_state" "network" {
 }
 
 # Ingress (ALB/listener/zone/SG)
-data "terraform_remote_state" "ingress" {
-  count   = var.remote_state_org != null && var.remote_state_ingress_ws != null ? 1 : 0
+data "terraform_remote_state" "alb" {
+  count   = var.remote_state_org != null && var.remote_state_alb_ws != null ? 1 : 0
   backend = "remote"
   config = {
     organization = var.remote_state_org
