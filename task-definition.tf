@@ -29,7 +29,7 @@ resource "aws_ecs_task_definition" "this" {
       }
 
       healthCheck = {
-        command     = "/health"
+        path        = "/health"
         interval    = 30
         timeout     = 5
         retries     = 3
