@@ -1,7 +1,7 @@
 # Host-based rule on shared HTTPS :443 listener
 resource "aws_lb_listener_rule" "host_443" {
   count        = var.expose_via_alb ? 1 : 0
-  listener_arn = var.https_listener_arn
+  listener_arn = local.effective_https_listener_arn
   priority     = var.listener_rule_priority
 
   action {
