@@ -12,29 +12,35 @@ locals {
     try(data.terraform_remote_state.cluster[0].outputs.ecs_cluster_arn, null)
   )
 
+  # prefer "ingress" if present, else "alb"
+  ingress_outputs = try(data.terraform_remote_state.ingress[0].outputs,
+                    try(data.terraform_remote_state.alb[0].outputs, null))
+
+  # Listener ARN: accept either a dedicated output OR a map output
   effective_https_listener_arn = coalesce(
     var.https_listener_arn,
-    try(data.terraform_remote_state.alb[0].outputs.https_443_listener_arn, null)
+    try(local.ingress_outputs.https_443_listener_arn, null),
+    try(local.ingress_outputs.listener_arns.https_443, null)
   )
 
   effective_alb_dns_name = coalesce(
     var.alb_dns_name,
-    try(data.terraform_remote_state.alb[0].outputs.alb_dns_name, null)
+    try(local.ingress_outputs.alb_dns_name, null)
   )
 
   effective_alb_zone_id = coalesce(
     var.alb_zone_id,
-    try(data.terraform_remote_state.alb[0].outputs.alb_zone_id, null)
+    try(local.ingress_outputs.alb_zone_id, null)
   )
 
   effective_route53_zone_id = coalesce(
     var.route53_zone_id,
-    try(data.terraform_remote_state.alb[0].outputs.route53_zone_id, null)
+    try(local.ingress_outputs.route53_zone_id, null)
   )
 
   effective_alb_security_group_id = coalesce(
     var.alb_security_group_id,
-    try(data.terraform_remote_state.alb[0].outputs.alb_sg_id, null)
+    try(local.ingress_outputs.alb_sg_id, null)
   )
 
  # Build the final container image URI:
