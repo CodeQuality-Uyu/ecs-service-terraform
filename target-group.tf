@@ -3,7 +3,7 @@ resource "aws_lb_target_group" "this" {
   port        = var.container_port
   protocol    = "HTTP"
   target_type = "ip"
-  vpc_id      = var.vpc_id
+  vpc_id      = local.effective_vpc_id
 
   health_check {
     path                = var.health_path
