@@ -14,27 +14,27 @@ locals {
 
   effective_https_listener_arn = coalesce(
     var.https_listener_arn,
-    try(data.terraform_remote_state.ingress[0].outputs.https_443_listener_arn, null)
+    try(data.terraform_remote_state.alb[0].outputs.https_443_listener_arn, null)
   )
 
   effective_alb_dns_name = coalesce(
     var.alb_dns_name,
-    try(data.terraform_remote_state.ingress[0].outputs.alb_dns_name, null)
+    try(data.terraform_remote_state.alb[0].outputs.alb_dns_name, null)
   )
 
   effective_alb_zone_id = coalesce(
     var.alb_zone_id,
-    try(data.terraform_remote_state.ingress[0].outputs.alb_zone_id, null)
+    try(data.terraform_remote_state.alb[0].outputs.alb_zone_id, null)
   )
 
   effective_route53_zone_id = coalesce(
     var.route53_zone_id,
-    try(data.terraform_remote_state.ingress[0].outputs.route53_zone_id, null)
+    try(data.terraform_remote_state.alb[0].outputs.route53_zone_id, null)
   )
 
   effective_alb_security_group_id = coalesce(
     var.alb_security_group_id,
-    try(data.terraform_remote_state.ingress[0].outputs.alb_sg_id, null)
+    try(data.terraform_remote_state.alb[0].outputs.alb_sg_id, null)
   )
 
  # Build the final container image URI:
