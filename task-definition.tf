@@ -5,9 +5,7 @@ resource "aws_ecs_task_definition" "this" {
   cpu                      = tostring(var.cpu)
   memory                   = tostring(var.memory)
 
-  execution_role_arn = var.execution_role_arn != null
-    ? var.execution_role_arn
-    : (var.create_execution_role ? aws_iam_role.execution[0].arn : null)
+  execution_role_arn = var.execution_role_arn != null ? var.execution_role_arn : (var.create_execution_role ? aws_iam_role.execution[0].arn : null)
 
   task_role_arn = var.task_role_arn
 
