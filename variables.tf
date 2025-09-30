@@ -1,107 +1,73 @@
-variable "aws_region"            { type = string }
-variable "aws_access_key"        { type = string }
-variable "aws_secret_key"        { type = string }
+# Already have:
+variable "aws_region"     { type = string }
+variable "aws_access_key" { type = string }   # (recommend using TFC env vars instead)
+variable "aws_secret_key" { type = string }
 
-variable "name"                  { description = "Service name"; type = string }
-variable "tags"                  { description = "Common tags";  type = map(string); default = {} }
+variable "name" { type = string }
+variable "tags" { type = map(string) default = {} }
 
-variable "cluster_arn"           { description = "Existing ECS cluster ARN"; type = string }
-variable "subnet_ids"            { description = "Subnets for awsvpc"; type = list(string) }
-variable "vpc_id"                { description = "VPC ID (for TG + SG)"; type = string }
-variable "assign_public_ip"      { description = "Assign public IP to tasks"; type = bool; default = true }
+# ✅ make these optional (we'll fill from remote_state if null)
+variable "cluster_arn"  { type = string       default = null }
+variable "subnet_ids"   { type = list(string) default = null }
+variable "vpc_id"       { type = string       default = null }
 
-# Sizing
-variable "cpu"                   { description = "Task CPU units"; type = number }
-variable "memory"                { description = "Task memory (MiB)"; type = number }
-variable "container_port"        { description = "Container port"; type = number }
-variable "desired_count"         { description = "Desired tasks"; type = number; default = 1 }
+variable "assign_public_ip" { type = bool default = true }
 
-# Image
-variable "image"                 { description = "Full image URI (optional)"; type = string; default = null }
-variable "repository_url"        { description = "ECR repo URL"; type = string; default = null }
-variable "image_tag"             { description = "Image tag"; type = string; default = "latest" }
-
-# Env & Secrets
-variable "env"                   { description = "Environment variables"; type = map(string); default = {} }
+# sizing / image / env (unchanged)
+variable "cpu"         { type = number }
+variable "memory"      { type = number }
+variable "container_port" { type = number }
+variable "desired_count"  { type = number default = 1 }
+variable "image"          { type = string default = null }
+variable "repository_url" { type = string default = null }
+variable "image_tag"      { type = string default = "latest" }
+variable "env"            { type = map(string) default = {} }
 variable "secrets" {
-  description = "Container secrets (name/valueFrom ARN)"
-  type = list(object({ name = string, valueFrom = string }))
+  type    = list(object({ name = string valueFrom = string }))
   default = []
 }
 
-# IAM (optional create)
-variable "execution_role_arn"    { type = string, default = null }
-variable "create_execution_role" { type = bool,   default = true  }
-variable "task_role_arn"         { type = string, default = null }
-variable "task_role_inline_policy_json" { type = string, default = null }
+# IAM / logs / SG (unchanged)
+variable "execution_role_arn"    { type = string default = null }
+variable "create_execution_role" { type = bool   default = true }
+variable "task_role_arn"         { type = string default = null }
+variable "task_role_inline_policy_json" { type = string default = null }
+variable "log_retention_days"    { type = number default = 14 }
+variable "expose_via_alb"        { type = bool   default = true }
+variable "alb_security_group_id" { type = string default = null }
+variable "allowed_source_sg_ids" { type = list(string) default = [] }
 
-# Logs
-variable "log_retention_days"    { type = number, default = 14 }
+# health / platform / deploy (unchanged)
+variable "health_path" { type = string default = "/health" }
+variable "health_check_grace_period" { type = number default = 60 }
+variable "enable_execute_command"    { type = bool   default = true }
+variable "platform_version"          { type = string default = "1.4.0" }
+variable "deployment_min_healthy_percent" { type = number default = 50 }
+variable "deployment_max_percent"         { type = number default = 200 }
 
-# Exposure / SG
-variable "expose_via_alb"        { type = bool,   default = true }
-variable "alb_security_group_id" { type = string, default = null }
-variable "allowed_source_sg_ids" { type = list(string), default = [] }
-
-# Health / platform / deploy
-variable "health_path"                 { type = string, default = "/health" }
-variable "health_check_grace_period"   { type = number, default = 60 }
-variable "enable_execute_command"      { type = bool,   default = true }
-variable "platform_version"            { type = string, default = "1.4.0" }
-variable "deployment_min_healthy_percent" { type = number, default = 50 }
-variable "deployment_max_percent"         { type = number, default = 200 }
-
-# Capacity providers (optional per-service override)
+# capacity providers (unchanged)
 variable "capacity_provider_strategy" {
-  description = "If empty, uses launch_type=FARGATE"
   type = list(object({
     capacity_provider = string
-    base              = optional(number, 0)
-    weight            = optional(number, 1)
+    base              = optional(number 0)
+    weight            = optional(number 1)
   }))
   default = []
 }
 
-# --- Host-based routing on :443 ---
-variable "https_listener_arn" {
-  description = "ARN of shared HTTPS :443 listener (from ingress). Required if expose_via_alb = true."
-  type        = string
-  default     = null
-}
+# --- Host-based routing on :443 (make optional and fill from remote_state)
+variable "https_listener_arn"  { type = string default = null }
+variable "hostnames"           { type = list(string) default = [] }
+variable "listener_rule_priority" { type = number default = null }
 
-variable "hostnames" {
-  description = "FQDNs that should route to this service (e.g., [\"users.dev.ecolors.app\"])."
-  type        = list(string)
-  default     = []
-}
+# Optional per-service DNS (make optional fill from remote_state)
+variable "create_dns_records" { type = bool default = true }
+variable "route53_zone_id"    { type = string default = null }
+variable "alb_dns_name"       { type = string default = null }
+variable "alb_zone_id"        { type = string default = null }
 
-variable "listener_rule_priority" {
-  description = "Unique priority for the rule on :443. Required if expose_via_alb = true."
-  type        = number
-  default     = null
-}
-
-# Optional: per-service DNS creation
-variable "create_dns_records" {
-  description = "Create Route53 A/ALIAS for hostnames → ALB"
-  type        = bool
-  default     = true
-}
-
-variable "route53_zone_id" {
-  description = "Route53 hosted zone ID containing the hostnames"
-  type        = string
-  default     = null
-}
-
-variable "alb_dns_name" {
-  description = "ALB DNS name (alias target)"
-  type        = string
-  default     = null
-}
-
-variable "alb_zone_id" {
-  description = "ALB zone ID (alias hosted zone ID)"
-  type        = string
-  default     = null
-}
+# --- NEW: remote state wiring (same pattern you used in ingress)
+variable "remote_state_org"        { type = string default = null }
+variable "remote_state_network_ws" { type = string default = null }
+variable "remote_state_ingress_ws" { type = string default = null }
+variable "remote_state_cluster_ws" { type = string default = null }
