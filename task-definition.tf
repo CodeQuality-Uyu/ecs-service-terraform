@@ -1,5 +1,5 @@
 resource "aws_ecs_task_definition" "this" {
-  family                   = var.name
+  family                   = "${var.environment}-${var.name}"
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
   cpu                      = tostring(var.cpu)
@@ -11,7 +11,7 @@ resource "aws_ecs_task_definition" "this" {
 
   container_definitions = jsonencode([
     {
-      name       = var.name
+      name       = "${var.environment}-${var.name}"
       image      = local.image_uri
       essential  = true
       portMappings = [{ containerPort = var.container_port, hostPort = var.container_port, protocol = "tcp" }]
@@ -24,7 +24,7 @@ resource "aws_ecs_task_definition" "this" {
         options = {
           awslogs-group         = aws_cloudwatch_log_group.this.name
           awslogs-region        = var.aws_region
-          awslogs-stream-prefix = var.name
+          awslogs-stream-prefix = "${var.environment}-${var.name}"
         }
       }
 
