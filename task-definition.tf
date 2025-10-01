@@ -7,7 +7,11 @@ resource "aws_ecs_task_definition" "this" {
 
   execution_role_arn = var.execution_role_arn != null ? var.execution_role_arn : (var.create_execution_role ? aws_iam_role.execution[0].arn : null)
 
-  task_role_arn = var.task_role_arn
+    # ✅ Pick the provided task role, else the one we just created
+  task_role_arn = coalesce(
+    var.task_role_arn,
+    try(aws_iam_role.task[0].arn, null)
+  
 
   container_definitions = jsonencode([
     {
