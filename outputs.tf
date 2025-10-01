@@ -8,3 +8,7 @@ output "ecr_repository_url" {
                )
   description = "ECR repository URI used by this service (created here or read from the dev workspace)."
 }
+output "execution_role_arn" {
+  value       = coalesce(var.execution_role_arn, try(aws_iam_role.execution[0].arn, null))
+  description = "Execution role ARN used by the task definition."
+}
