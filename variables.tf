@@ -3,7 +3,9 @@ variable "aws_region"     { type = string }
 variable "aws_access_key" { type = string }   # (recommend using TFC env vars instead)
 variable "aws_secret_key" { type = string }
 
-variable "name" { type = string }
+variable "environment" { type = string } # dev, qa, prod
+variable "name" { type = string } # auth-provider-web-api
+
 variable "tags" {
   type = map(string)
   default = {}
