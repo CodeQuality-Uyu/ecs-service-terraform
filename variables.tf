@@ -12,9 +12,18 @@ variable "tags" {
 }
 
 # ECR/image overrides stay optional (you won't pass them for dev/prod)
-variable "repository_url" { type = string, default = null }
-variable "image"          { type = string, default = null }  # full URI override
-variable "image_tag"      { type = string, default = null }  # default computed
+variable "repository_url" {
+  type = string
+  default = null
+}
+variable "image"          {
+  type = string
+  default = null
+}  # full URI override
+variable "image_tag"      {
+  type = string
+  default = null
+}  # default computed
 
 
 # ✅ make these optional (we'll fill from remote_state if null)
@@ -43,18 +52,6 @@ variable "container_port" { type = number }
 variable "desired_count"  {
   type = number
   default = 1
-}
-variable "image"          {
-  type = string
-  default = null
-}
-variable "repository_url" { 
-  type = string
-  default = null
-}
-variable "image_tag"      {
-  type = string
-  default = "latest"
 }
 variable "env"            {
   type = map(string)
