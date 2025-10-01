@@ -57,7 +57,7 @@ locals {
   )
 
   # Final image reference used by ECS
-  image_uri = var.image != null ? var.image : "${local.repo_url}:${local.effective_image_tag}"
+  image_uri = var.image != null ? var.image : "${local.repo_url}:${var.image_tag}"
 
   container_environment = [
     for k, v in var.env : { name = k, value = v }
