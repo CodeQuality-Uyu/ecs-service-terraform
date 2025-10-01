@@ -1,5 +1,5 @@
 resource "aws_lb_target_group" "this" {
-  name        = substr("${var.name}-tg", 0, 32)
+  name        = substr("${var.environment}-${var.name}-tg", 0, 32)
   port        = var.container_port
   protocol    = "HTTP"
   target_type = "ip"
