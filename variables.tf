@@ -181,3 +181,8 @@ variable "remote_state_cluster_ws" {
   type = string
   default = null
 }
+variable "remote_state_ecr_ws" {
+  type = string,
+  default = null
+}
+
