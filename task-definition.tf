@@ -5,7 +5,10 @@ resource "aws_ecs_task_definition" "this" {
   cpu                      = tostring(var.cpu)
   memory                   = tostring(var.memory)
 
-  execution_role_arn = var.execution_role_arn != null ? var.execution_role_arn : (var.create_execution_role ? aws_iam_role.execution[0].arn : null)
+  execution_role_arn = coalesce(
+    var.execution_role_arn,
+    try(aws_iam_role.execution[0].arn, null)
+  )
 
     # ✅ Pick the provided task role, else the one we just created
   task_role_arn = coalesce(
