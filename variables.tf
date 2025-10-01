@@ -22,8 +22,8 @@ variable "image"          {
 }  # full URI override
 variable "image_tag"      {
   type = string
-  default = null
-}  # default computed
+  default = "v1.0.0"
+}
 
 
 # ✅ make these optional (we'll fill from remote_state if null)

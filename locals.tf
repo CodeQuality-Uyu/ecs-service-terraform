@@ -56,12 +56,8 @@ locals {
     var.repository_url  # optional override if you ever set it
   )
 
-  # Default first tag if none provided: "<name>-v1.0.0"
-  default_image_tag   = "${var.name}-v1.0.0"
-  effective_image_tag = coalesce(var.image_tag, local.default_image_tag)
-
   # Final image reference used by ECS
-  image_uri = var.image != null ? var.image : "${local.repo_url}:${local.effective_image_tag}"
+  image_uri = var.image != null ? var.image : "${local.repo_url}:${var.image_tag}"
 
   container_environment = [
     for k, v in var.env : { name = k, value = v }
