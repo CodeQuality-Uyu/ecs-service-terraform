@@ -30,8 +30,7 @@ resource "aws_ecs_task_definition" "this" {
           awslogs-region        = var.aws_region
           awslogs-stream-prefix = "${var.environment}-${var.name}"
         }
-      }
-
+      },
       healthCheck = {
         command     = ["CMD-SHELL", "curl -f http://localhost:${var.container_port}${var.health_path} || exit 1"]
         interval    = 30
