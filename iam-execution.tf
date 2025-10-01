@@ -17,16 +17,23 @@ resource "aws_iam_role" "execution" {
   tags               = var.tags
 }
 
-# Base permissions: pull from ECR, push logs, etc.
+# Wait a bit for IAM to propagate
+resource "time_sleep" "iam_propagation" {
+  count         = var.create_execution_role && var.execution_role_arn == null ? 1 : 0
+  depends_on    = [aws_iam_role.execution]
+  create_duration = "15s"
+}
+
 resource "aws_iam_role_policy_attachment" "exec_base" {
   count      = var.create_execution_role && var.execution_role_arn == null ? 1 : 0
   role       = aws_iam_role.execution[0].name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
+  depends_on = [time_sleep.iam_propagation]   # 👈 ensure delay before attach
 }
 
-# If you use ECS Exec, give SSM permissions to the EXECUTION role
 resource "aws_iam_role_policy_attachment" "exec_ssm" {
   count      = var.create_execution_role && var.execution_role_arn == null && var.enable_execute_command ? 1 : 0
   role       = aws_iam_role.execution[0].name
   policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+  depends_on = [time_sleep.iam_propagation]   # 👈 ensure delay before attach
 }
