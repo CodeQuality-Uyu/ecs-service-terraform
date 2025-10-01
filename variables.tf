@@ -11,6 +11,12 @@ variable "tags" {
   default = {}
 }
 
+# ECR/image overrides stay optional (you won't pass them for dev/prod)
+variable "repository_url" { type = string, default = null }
+variable "image"          { type = string, default = null }  # full URI override
+variable "image_tag"      { type = string, default = null }  # default computed
+
+
 # ✅ make these optional (we'll fill from remote_state if null)
 variable "cluster_arn"  { 
   type = string
