@@ -10,7 +10,7 @@ resource "aws_ecs_task_definition" "this" {
     # ✅ Pick the provided task role, else the one we just created
   task_role_arn = coalesce(
     var.task_role_arn,
-    try(aws_iam_role.task[0].arn, null)
+    try(aws_iam_role.task[0].arn, null))
   
 
   container_definitions = jsonencode([
