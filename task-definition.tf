@@ -40,8 +40,8 @@ resource "aws_ecs_task_definition" "this" {
 
   lifecycle {
     precondition {
-      condition     = local.image_uri != null && local.image_uri != ""
-      error_message = "Set either `image` (full URI) OR `repository_url` + `image_tag`."
+      condition     = local.repo_url != null && local.effective_image_tag != ""
+      error_message = "No ECR repo resolved. Dev env must create it (or provide repository_url)."
     }
   }
 
