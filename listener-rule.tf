@@ -12,5 +12,9 @@ resource "aws_lb_listener_rule" "https_host" {
     host_header { values = var.hostnames }
   }
 
+  lifecycle {
+    ignore_changes = [ tags ]
+  }
+
   tags = var.tags
 }
