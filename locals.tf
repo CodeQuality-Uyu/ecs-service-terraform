@@ -49,10 +49,19 @@ locals {
     try(local.ingress_outputs.alb_sg_id, null)
   )
 
- # Build the final container image URI:
-  # - If `var.image` is provided, use it as-is (e.g., ".../repo:tag" or with a digest).
-  # - Otherwise, compose "<repository_url>:<image_tag>".
-  image_uri = var.image != null ? var.image : "${var.repository_url}:${var.image_tag}"
+  # Prefer repo from the 'source' workspace (dev) → else the one we create here
+  repo_url = coalesce(
+    try(data.terraform_remote_state.ecr_source[0].outputs.ecr_repository_url, null),
+    try(aws_ecr_repository.this[0].repository_url, null),
+    var.repository_url  # optional override if you ever set it
+  )
+
+  # Default first tag if none provided: "<name>-v1.0.0"
+  default_image_tag   = "${var.name}-v1.0.0"
+  effective_image_tag = coalesce(var.image_tag, local.default_image_tag)
+
+  # Final image reference used by ECS
+  image_uri = var.image != null ? var.image : "${local.repo_url}:${local.effective_image_tag}"
 
   container_environment = [
     for k, v in var.env : { name = k, value = v }

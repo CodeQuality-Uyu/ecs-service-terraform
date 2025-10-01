@@ -10,7 +10,7 @@ data "aws_iam_policy_document" "ecs_tasks_assume" {
 
 resource "aws_iam_role" "execution" {
   count              = var.create_execution_role && var.execution_role_arn == null ? 1 : 0
-  name               = "tf-${var.name}-exec"
+  name               = "tf-${var.environment}-${var.name}-exec"
   assume_role_policy = data.aws_iam_policy_document.ecs_tasks_assume.json
   tags               = var.tags
 }

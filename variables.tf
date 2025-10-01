@@ -3,11 +3,19 @@ variable "aws_region"     { type = string }
 variable "aws_access_key" { type = string }   # (recommend using TFC env vars instead)
 variable "aws_secret_key" { type = string }
 
-variable "name" { type = string }
+variable "environment" { type = string } # dev, qa, prod
+variable "name" { type = string } # auth-provider-web-api
+
 variable "tags" {
   type = map(string)
   default = {}
 }
+
+# ECR/image overrides stay optional (you won't pass them for dev/prod)
+variable "repository_url" { type = string, default = null }
+variable "image"          { type = string, default = null }  # full URI override
+variable "image_tag"      { type = string, default = null }  # default computed
+
 
 # ✅ make these optional (we'll fill from remote_state if null)
 variable "cluster_arn"  { 
@@ -179,3 +187,8 @@ variable "remote_state_cluster_ws" {
   type = string
   default = null
 }
+variable "remote_state_ecr_ws" {
+  type = string,
+  default = null
+}
+

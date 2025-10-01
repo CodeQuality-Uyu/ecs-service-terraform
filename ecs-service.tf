@@ -1,5 +1,5 @@
 resource "aws_ecs_service" "this" {
-  name                               = var.name
+  name                               = "${var.environment}-${var.name}"
   cluster                            = local.effective_cluster_arn
   task_definition                    = aws_ecs_task_definition.this.arn
   desired_count                      = var.desired_count
@@ -28,7 +28,7 @@ resource "aws_ecs_service" "this" {
 
   load_balancer {
     target_group_arn = aws_lb_target_group.this.arn
-    container_name   = var.name
+    container_name   = "${var.environment}-${var.name}"
     container_port   = var.container_port
   }
 

@@ -1,5 +1,5 @@
 resource "aws_ecs_task_definition" "this" {
-  family                   = var.name
+  family                   = "${var.environment}-${var.name}"
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
   cpu                      = tostring(var.cpu)
@@ -11,7 +11,7 @@ resource "aws_ecs_task_definition" "this" {
 
   container_definitions = jsonencode([
     {
-      name       = var.name
+      name       = "${var.environment}-${var.name}"
       image      = local.image_uri
       essential  = true
       portMappings = [{ containerPort = var.container_port, hostPort = var.container_port, protocol = "tcp" }]
@@ -24,7 +24,7 @@ resource "aws_ecs_task_definition" "this" {
         options = {
           awslogs-group         = aws_cloudwatch_log_group.this.name
           awslogs-region        = var.aws_region
-          awslogs-stream-prefix = var.name
+          awslogs-stream-prefix = "${var.environment}-${var.name}"
         }
       }
 
@@ -40,8 +40,8 @@ resource "aws_ecs_task_definition" "this" {
 
   lifecycle {
     precondition {
-      condition     = local.image_uri != null && local.image_uri != ""
-      error_message = "Set either `image` (full URI) OR `repository_url` + `image_tag`."
+      condition     = local.repo_url != null && local.effective_image_tag != ""
+      error_message = "No ECR repo resolved. Dev env must create it (or provide repository_url)."
     }
   }
 
