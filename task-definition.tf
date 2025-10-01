@@ -44,7 +44,10 @@ resource "aws_ecs_task_definition" "this" {
     }
   ])
 
+  skip_destroy = true        # keeps old revisions registered
+
   lifecycle {
+    create_before_destroy = true
     precondition {
       condition     = local.repo_url != null
       error_message = "No ECR repo resolved. Dev env must create it (or provide repository_url)."
