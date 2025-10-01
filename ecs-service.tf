@@ -34,6 +34,11 @@ resource "aws_ecs_service" "this" {
 
   deployment_minimum_healthy_percent = var.deployment_min_healthy_percent
   deployment_maximum_percent         = var.deployment_max_percent
+  force_new_deployment = true
+  deployment_circuit_breaker {
+    enable   = true
+    rollback = true
+  }
 
   lifecycle {
     ignore_changes = [desired_count] # optional: let autoscaling update it
