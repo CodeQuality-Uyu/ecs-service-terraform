@@ -2,7 +2,7 @@ resource "aws_security_group" "svc" {
   name        = "${var.name}-svc-sg"
   description = "SG for ${var.name} tasks"
   vpc_id      = local.effective_vpc_id
-  tags        = merge(var.tags, { Name = "${var.name}-svc-sg" })
+  tags        = merge(var.tags, { Name = "${var.environment}-${var.name}-svc-sg" })
 }
 
 # allow ALB → service (only when exposing via ALB)
