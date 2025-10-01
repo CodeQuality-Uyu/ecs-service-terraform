@@ -1,5 +1,5 @@
 resource "aws_ecs_service" "this" {
-  name                               = var.name
+  name                               = "${var.environment}-${var.name}"
   cluster                            = local.effective_cluster_arn
   task_definition                    = aws_ecs_task_definition.this.arn
   desired_count                      = var.desired_count
