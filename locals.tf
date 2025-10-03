@@ -71,7 +71,7 @@ locals {
   use_capacity_providers = length(var.capacity_provider_strategy) > 0
 
   # SG compartido para clientes de DB, salido de la VPC
-  db_clients_sg_id = try(data.terraform_remote_state.network.outputs.db_clients_sg_id, null)
+  db_clients_sg_id = try(data.terraform_remote_state.network[0].outputs.db_clients_sg_id, null)
 
   # SGs “propios” del servicio (el que ya definís)
   base_service_sg_ids = [aws_security_group.svc.id]
