@@ -188,4 +188,9 @@ variable "remote_state_ecr_ws" {
   type = string
   default = null
 }
+variable "extra_security_group_ids" {
+  description = "SGs adicionales para adjuntar a las tasks (p.ej. db-clients-sg)"
+  type        = list(string)
+  default     = []
+}
 
