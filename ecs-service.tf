@@ -21,8 +21,8 @@ resource "aws_ecs_service" "this" {
   }
 
   network_configuration {
-    subnets         = local.effective_subnet_ids
-    security_groups = [aws_security_group.svc.id]
+    subnets          = local.effective_subnet_ids
+    security_groups  = local.effective_service_sg_ids
     assign_public_ip = var.assign_public_ip
   }
 
