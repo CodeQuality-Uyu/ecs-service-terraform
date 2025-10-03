@@ -12,3 +12,7 @@ output "execution_role_arn" {
   value       = coalesce(var.execution_role_arn, try(aws_iam_role.execution[0].arn, null))
   description = "Execution role ARN used by the task definition."
 }
+output "effective_service_security_groups" {
+  value       = local.effective_service_sg_ids
+  description = "SGs adjuntos a las ENIs de la task (incluye db-clients-sg si existe)"
+}
